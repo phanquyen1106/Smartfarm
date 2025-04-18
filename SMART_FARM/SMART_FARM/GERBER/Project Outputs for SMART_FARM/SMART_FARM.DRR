@@ -1,0 +1,24 @@
+----------------------------------------------------------------------------------------------------------------------------------
+NCDrill File Report For: SMART_FARM.PcbDoc   3/6/2025  1:51:45 PM
+----------------------------------------------------------------------------------------------------------------------------------
+
+Layer Pair : Top Layer to Bottom Layer
+ASCII RoundHoles File : SMART_FARM-RoundHoles.TXT
+ASCII SlotHoles File : SMART_FARM-SlotHoles.TXT
+
+Tool       Hole Size               Hole Tolerance               Hole Type       Hole Count   Plated         Tool Travel
+----------------------------------------------------------------------------------------------------------------------------------
+T1      32mil (0.8mm)                                             Round             6         PTH        0.00inch (0.00mm)
+T2      32mil (0.813mm)                                           Round             9         PTH        0.00inch (0.00mm)
+T3      35mil (0.889mm)                                           Round             12        PTH        0.00inch (0.00mm)
+T4      35mil (0.899mm)                                           Round             2         PTH        0.00inch (0.00mm)
+T5      40mil (1.021mm)                                           Round             30        PTH        0.00inch (0.00mm)
+T6      45mil (1.143mm)                                           Round             5         PTH        0.00inch (0.00mm)
+T7      50mil (1.27mm)                                            Round             8         PTH        0.00inch (0.00mm)
+T8      51mil (1.3mm)                                             Round             2         PTH        0.00inch (0.00mm)
+T9      59mil (1.501mm)                                           Slot              3         PTH        0.00inch (0.00mm)
+T10     158mil (4.001mm)                                          Round             4         PTH        0.00inch (0.00mm)
+----------------------------------------------------------------------------------------------------------------------------------
+Totals                                                                              81
+
+Total Processing Time (hh:mm:ss) : 00:00:00

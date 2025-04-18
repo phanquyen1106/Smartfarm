@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farming Greenhouse</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            background-color: #f3f4f6;
+        }
+        .sidebar {
+            width: 20%;
+            background-color: #00796b;
+            color: white;
+            padding: 20px;
+            height: 100vh;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .sidebar li:hover {
+            background-color: #00695c;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px;
+        }
+        .card-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .active {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>Smart Farm</h2>
+        <ul>
+            <li>Home</li>
+            <li>Dashboard</li>
+            <li>Farm Chart</li>
+            <li style="background-color: yellow; color: black;">All View Farm</li>
+            <li>Control Panel</li>
+        </ul>
+    </div>
+    <div class="main-content">
+        <h1>Smart Farming Greenhouse</h1>
+        <div class="card-container">
+            <div class="card">
+                <h3>Air Temperature</h3>
+                <p>27.68°C</p>
+            </div>
+            <div class="card">
+                <h3>Air Humidity</h3>
+                <p>58.90% RH</p>
+            </div>
+            <div class="card">
+                <h3>Greenhouse Light</h3>
+                <p>1789 Lux</p>
+            </div>
+        </div>
+        <div class="card-container" style="margin-top: 20px;">
+            <div class="card">
+                <h3>LED Grow Plant</h3>
+                <p class="active">Active</p>
+            </div>
+            <div class="card">
+                <h3>Evap Fan</h3>
+                <p class="active">Active</p>
+            </div>
+            <div class="card">
+                <h3>Inside Fan</h3>
+                <p class="active">Active</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

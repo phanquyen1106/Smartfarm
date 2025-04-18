@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+    <title>Wind Monitoring System</title>
+    <style>
+      /* Reset CSS */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Roboto", sans-serif;
+        background: linear-gradient(to right, #74ebd5, #acb6e5);
+        color: #333;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Dashboard chia làm 2 bên */
+      .dashboard {
+        display: flex;
+        gap: 20px;
+        width: 90%;
+        max-width: 1200px;
+      }
+
+      /* Phần bên trái chứa thông tin, biểu đồ, điều khiển,... */
+      .left-panel {
+        flex: 1;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      /* Phần bên phải chứa bảng dữ liệu */
+      .right-panel {
+        flex: 1;
+        padding: 20px;
+        background: #ffffff;
+        border-radius: 20px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        overflow-y: auto;
+        max-height: 90vh;
+      }
+
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #0077b6;
+        text-align: center;
+      }
+
+      .box {
+        margin: 20px 0;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .box h3 {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 10px;
+      }
+
+      .box p {
+        font-size: 22px;
+        font-weight: bold;
+        color: #0077b6;
+      }
+
+      #chart {
+        max-width: 100%;
+        height: auto;
+      }
+
+      .btn-group {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+      }
+
+      .btn-group button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        border-radius: 25px;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        color: #fff;
+      }
+
+      .btn-group button:nth-child(1) {
+        background: #4caf50;
+      }
+
+      .btn-group button:nth-child(2) {
+        background: #f44336;
+      }
+
+      .btn-group button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+      }
+
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+
+      th,
+      td {
+        padding: 8px;
+        text-align: center;
+      }
+
+      th {
+        background-color: #f2f2f2;
+      }
+
+      /* Style nút phân trang */
+      #pagination,
+      #prev-btn,
+      #next-btn {
+        display: inline-block;
+        margin: 5px;
+      }
+
+      #pagination button,
+      #prev-btn,
+      #next-btn {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 5px;
+        background: #0077b6;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      #pagination button:disabled,
+      #prev-btn:disabled,
+      #next-btn:disabled {
+        background: #ccc;
+        cursor: default;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard">
+      <!-- Phần bên trái -->
+      <div class="left-panel">
+        <div class="title">Hệ Thống Vườn Thông Minh</div>
+
+        <!-- Tốc độ gió -->
+        <div class="box">
+          <h3>Tốc Độ Gió</h3>
+          <p id="wind">0 m/s</p>
+        </div>
+
+        <!-- Dữ liệu cảm biến -->
+        <div class="box">
+          <p><strong>Nhiệt độ:</strong> <span id="temp">--</span> °C</p>
+          <p><strong>Độ ẩm:</strong> <span id="hum">--</span> %</p>
+          <p><strong>Ánh sáng:</strong> <span id="light">--</span> lux</p>
+          <p><strong>Độ ẩm đất:</strong> <span id="soil-moisture">--</span> %</p>
+        </div>
+
+        <!-- Biểu đồ dữ liệu thời gian -->
+        <h1 style="text-align: center; margin: 20px 0;">Biểu đồ dữ liệu thời gian</h1>
+        <canvas id="canvas" width="500" height="500"></canvas>
+
+        <!-- Điều khiển LED -->
+        <div class="box">
+          <h3>Điều Khiển LED</h3>
+          <div class="btn-group">
+            <button onclick="toggleLED('ON')">Bật LED</button>
+            <button onclick="toggleLED('OFF')">Tắt LED</button>
+          </div>
+        </div>
+
+        <!-- Kiểm tra gió và LED -->
+        <div class="box">
+          <h3>Kiểm Tra Gió và LED</h3>
+          <i id="bulb" class="fa-regular fa-lightbulb fa-2xl"></i>
+          <br /><br />
+          <button onclick="checkWindAndBlink()">Kiểm Tra Gió</button>
+        </div>
+      </div>
+
+      <!-- Phần bên phải -->
+      <div class="right-panel">
+        <!-- Bảng dữ liệu Sensor -->
+        <div class="box">
+          <h3>Dữ liệu Sensor</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nhiệt độ</th>
+                <th>Độ ẩm</th>
+                <th>Ánh sáng</th>
+                <th>Gió</th>
+                <th>Thời gian</th>
+              </tr>
+            </thead>
+            <tbody id="sensor-table"></tbody>
+          </table>
+          <div id="pagination"></div>
+        </div>
+
+        <!-- Bảng dữ liệu Devices -->
+        <div class="box">
+          <h3>Dữ liệu Devices</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Thiết bị</th>
+                <th>Trạng thái</th>
+                <th>Thời gian</th>
+              </tr>
+            </thead>
+            <tbody id="devices-table"></tbody>
+          </table>
+          <div style="text-align: center;">
+            <button id="prev-btn">Previous</button>
+            <span id="current-page">1</span> / <span id="total-pages">1</span>
+            <button id="next-btn">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Thư viện Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+      // Hàm lấy dữ liệu cảm biến và cập nhật lên giao diện
+      async function fetchSensorData() {
+        try {
+          const response = await fetch('/get_latest_sensor_data');
+          const data = await response.json();
+          document.getElementById('temp').textContent = data.temp || '--';
+          document.getElementById('hum').textContent = data.hum || '--';
+          document.getElementById('light').textContent = data.light || '--';
+          document.getElementById('soil-moisture').textContent = data.soil_moisture || '--';
+        } catch (error) {
+          console.error('Lỗi khi lấy dữ liệu cảm biến:', error);
+        }
+      }
+      setInterval(fetchSensorData, 5000);
+      fetchSensorData();
+
+      // Hàm cập nhật tốc độ gió
+      async function updateWindSpeed() {
+        try {
+          const response = await fetch('/wind');
+          const data = await response.json();
+          const windElement = document.getElementById('wind');
+          windElement.textContent =
+            data.wind !== 'Không có dữ liệu'
+              ? data.wind + ' m/s'
+              : 'Không có dữ liệu';
+        } catch (error) {
+          console.error('Lỗi khi lấy dữ liệu tốc độ gió:', error);
+        }
+      }
+      setInterval(updateWindSpeed, 5000);
+      updateWindSpeed();
+
+      // Hàm vẽ biểu đồ sử dụng Chart.js
+      async function fetchAndRenderChart() {
+        try {
+          const response = await fetch('/data');
+          if (!response.ok) throw new Error('Không thể lấy dữ liệu từ API');
+          const data = await response.json();
+          const labels = data.map((item) =>
+            new Date(item.Time).toLocaleString()
+          );
+          const tempData = data.map((item) => item.Temp);
+          const humData = data.map((item) => item.Hum);
+          const lightData = data.map((item) => item.Light);
+          const windData = data.map((item) => item.Wind);
+          renderChart(labels, tempData, humData, lightData, windData);
+        } catch (error) {
+          console.error('Lỗi:', error);
+        }
+      }
+
+      function renderChart(labels, tempData, humData, lightData, windData) {
+        const ctx = document.getElementById('canvas').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Nhiệt độ (°C)',
+                data: tempData,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                fill: true,
+              },
+              {
+                label: 'Độ ẩm (%)',
+                data: humData,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                fill: true,
+              },
+              {
+                label: 'Ánh sáng (lux)',
+                data: lightData,
+                borderColor: 'rgba(255, 206, 86, 1)',
+                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                fill: true,
+              },
+              {
+                label: 'Gió (m/s)',
+                data: windData,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                fill: true,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: "top" },
+              tooltip: { mode: "index", intersect: false },
+            },
+            scales: {
+              x: { title: { display: true, text: "Thời gian" } },
+              y: { title: { display: true, text: "Giá trị" } },
+            },
+          },
+        });
+      }
+      fetchAndRenderChart();
+
+      // Hàm điều khiển LED
+      function toggleLED(state) {
+        fetch(`http://localhost:4000/led/${state}`)
+          .then((response) => {
+            if (!response.ok) throw new Error("Không thể kết nối đến server");
+            return response.json();
+          })
+          .then((data) => {
+            alert(`LED ${state === "ON" ? "bật" : "tắt"} thành công: ${data.message}`);
+          })
+          .catch((error) => {
+            console.error("Lỗi:", error);
+            alert("Có lỗi xảy ra khi điều khiển LED!");
+          });
+      }
+
+      // Hàm kiểm tra gió và LED
+      function checkWindAndBlink() {
+        fetch("http://localhost:4000/check-wind")
+          .then((response) => {
+            if (!response.ok) throw new Error("Không thể kết nối đến server");
+            return response.json();
+          })
+          .then((data) => {
+            alert(data.message);
+          })
+          .catch((error) => {
+            console.error("Lỗi khi gọi API:", error);
+            alert("Có lỗi xảy ra khi kiểm tra gió!");
+          });
+      }
+
+      // --- Phần bảng dữ liệu Sensor với phân trang ---
+      async function fetchSensorTableData(page = 1, limit = 20) {
+        try {
+          const response = await fetch("/api/sensor_data/all");
+          if (!response.ok) throw new Error("Không thể lấy dữ liệu sensor_data");
+          const data = await response.json();
+          const startIndex = (page - 1) * limit;
+          const endIndex = page * limit;
+          const pageData = data.slice(startIndex, endIndex);
+          const tableBody = document.getElementById("sensor-table");
+          tableBody.innerHTML = "";
+          pageData.forEach((item) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.ID}</td>
+              <td>${item.Temp} °C</td>
+              <td>${item.Hum} %</td>
+              <td>${item.Light} lux</td>
+              <td>${item.Wind} m/s</td>
+              <td>${new Date(item.Time).toLocaleString()}</td>
+            `;
+            tableBody.appendChild(row);
+          });
+          displayPagination(data.length, page, limit);
+        } catch (error) {
+          console.error("Lỗi:", error);
+        }
+      }
+
+      function displayPagination(totalItems, currentPage, limit) {
+        const paginationContainer = document.getElementById("pagination");
+        paginationContainer.innerHTML = "";
+        const totalPages = Math.ceil(totalItems / limit);
+        for (let i = 1; i <= totalPages; i++) {
+          const button = document.createElement("button");
+          button.textContent = i;
+          button.disabled = i === currentPage;
+          button.addEventListener("click", () => fetchSensorTableData(i, limit));
+          paginationContainer.appendChild(button);
+        }
+      }
+      fetchSensorTableData();
+
+      // --- Phần bảng dữ liệu Devices với phân trang ---
+      let currentPage = 1;
+      let devicesData = [];
+      const rowsPerPage = 20;
+      async function fetchDevicesData() {
+        try {
+          const response = await fetch("/api/devices/all");
+          if (!response.ok) throw new Error("Không thể lấy dữ liệu");
+          devicesData = await response.json();
+          renderDevicesTable();
+        } catch (error) {
+          console.error("Lỗi:", error);
+        }
+      }
+      function renderDevicesTable() {
+        const tableBody = document.getElementById("devices-table");
+        tableBody.innerHTML = "";
+        const startIndex = (currentPage - 1) * rowsPerPage;
+        const endIndex = Math.min(startIndex + rowsPerPage, devicesData.length);
+        const pageData = devicesData.slice(startIndex, endIndex);
+        pageData.forEach((item) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${item.id}</td>
+            <td>${item.Device}</td>
+            <td>${item.Action}</td>
+            <td>${new Date(item.Time).toLocaleString()}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+        document.getElementById("current-page").innerText = currentPage;
+        document.getElementById("total-pages").innerText = Math.ceil(devicesData.length / rowsPerPage);
+        document.getElementById("prev-btn").disabled = currentPage === 1;
+        document.getElementById("next-btn").disabled = endIndex >= devicesData.length;
+      }
+      document.getElementById("prev-btn").onclick = () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderDevicesTable();
+        }
+      };
+      document.getElementById("next-btn").onclick = () => {
+        if (currentPage < Math.ceil(devicesData.length / rowsPerPage)) {
+          currentPage++;
+          renderDevicesTable();
+        }
+      };
+      fetchDevicesData();
+    </script>
+  </body>
+</html>
